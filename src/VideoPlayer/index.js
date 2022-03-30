@@ -21,7 +21,6 @@ import executeAsPromise from '@michieljs/execute-as-promise'
 
 import Metrics from '../Metrics'
 import Log from '../Log'
-import Ads from '../Ads'
 
 import events from './events'
 import autoSetupMixin from '../helpers/autoSetupMixin'
@@ -49,18 +48,7 @@ export const initVideoPlayer = config => {
 let eventHandlers = {}
 
 const state = {
-  adsEnabled: false,
   playing: false,
-  _playingAds: false,
-  get playingAds() {
-    return this._playingAds
-  },
-  set playingAds(val) {
-    if (this._playingAds !== val) {
-      this._playingAds = val
-      fireOnConsumer(val === true ? 'AdStart' : 'AdEnd')
-    }
-  },
   skipTime: false,
   playAfterSeek: null,
 }
@@ -232,26 +220,6 @@ const videoPlayerPlugin = {
 
     if (this.src == url) {
       this.clear().then(this.open(url, config))
-    } else {
-      const adConfig = { enabled: state.adsEnabled, duration: 300 }
-      if (config.videoId) {
-        adConfig.caid = config.videoId
-      }
-      Ads.get(adConfig, consumer).then(ads => {
-        state.playingAds = true
-        ads.prerolls().then(() => {
-          state.playingAds = false
-          loader(url, videoEl, config)
-            .then(() => {
-              registerEventListeners()
-              this.show()
-              this.play()
-            })
-            .catch(e => {
-              fireOnConsumer('error', { videoElement: videoEl, event: e })
-            })
-        })
-      })
     }
   },
 
@@ -263,15 +231,6 @@ const videoPlayerPlugin = {
   },
 
   close() {
-    Ads.cancel()
-    if (state.playingAds) {
-      state.playingAds = false
-      Ads.stop()
-      // call self in next tick
-      setTimeout(() => {
-        this.close()
-      })
-    }
     if (!this.canInteract) return
     this.clear()
     this.hide()
@@ -359,10 +318,6 @@ const videoPlayerPlugin = {
     }
   },
 
-  enableAds(enabled = true) {
-    state.adsEnabled = enabled
-  },
-
   /* Public getters */
   get duration() {
     return videoEl && (isNaN(videoEl.duration) ? Infinity : videoEl.duration)
@@ -386,15 +341,6 @@ const videoPlayerPlugin = {
 
   get playing() {
     return state.playing
-  },
-
-  get playingAds() {
-    return state.playingAds
-  },
-
-  get canInteract() {
-    // todo: perhaps add an extra flag wether we allow interactions (i.e. pauze, mute, etc.) during ad playback
-    return state.playingAds === false
   },
 
   get top() {
@@ -427,10 +373,6 @@ const videoPlayerPlugin = {
     } else {
       return videoEl && videoEl.style.display === 'block'
     }
-  },
-
-  get adsEnabled() {
-    return state.adsEnabled
   },
 
   // prefixed with underscore to indicate 'semi-private'

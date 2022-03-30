@@ -19,16 +19,10 @@
 
 import Deepmerge from 'deepmerge'
 import Lightning from '../Lightning'
-import Locale from '../Locale'
 import Metrics from '../Metrics'
 import VersionLabel from '../VersionLabel'
-import FpsCounter from '../FpsCounter'
 import Log from '../Log'
 import Settings from '../Settings'
-import { initLanguage } from '../Language'
-import Utils from '../Utils'
-import Registry from '../Registry'
-import { initColors } from '../Colors'
 
 import packageInfo from '../../package.json'
 
@@ -117,8 +111,6 @@ export default function(App, appData, platformSettings) {
     _setup() {
       Promise.all([
         this.loadFonts((App.config && App.config.fonts) || (App.getFonts && App.getFonts()) || []),
-        // to be deprecated
-        Locale.load((App.config && App.config.locale) || (App.getLocale && App.getLocale())),
         App.language && this.loadLanguage(App.language()),
         App.colors && this.loadColors(App.colors()),
       ])
@@ -151,14 +143,6 @@ export default function(App, appData, platformSettings) {
             })
           }
 
-          if (platformSettings.showFps) {
-            this.childList.a({
-              ref: 'FpsCounter',
-              type: FpsCounter,
-              zIndex: 1,
-            })
-          }
-
           super._setup()
         })
         .catch(console.error)
@@ -186,7 +170,6 @@ export default function(App, appData, platformSettings) {
       Log.info('Closing App')
 
       Settings.clearSubscribers()
-      Registry.clear()
 
       this.childList.remove(this.tag('App'))
       this.cleanupFonts()
@@ -210,26 +193,6 @@ export default function(App, appData, platformSettings) {
       } else {
         Log.info('No support for removing manually-added fonts')
       }
-    }
-
-    loadLanguage(config) {
-      let file = Utils.asset('translations.json')
-      let language = config
-
-      if (typeof language === 'object') {
-        language = config.language || null
-        file = config.file || file
-      }
-
-      return initLanguage(file, language)
-    }
-
-    loadColors(config) {
-      let file = Utils.asset('colors.json')
-      if (config && (typeof config === 'string' || typeof config === 'object')) {
-        file = config
-      }
-      return initColors(file)
     }
 
     set focus(v) {
