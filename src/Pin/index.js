@@ -17,10 +17,8 @@
  * limitations under the License.
  */
 
-import Settings from '../Settings'
+import { settings, appInstance, log } from '../SdkPlugins'
 import PinDialog from './dialog'
-import { ApplicationInstance } from '../Launch'
-import { Log } from '../../index'
 
 // only used during local development
 let unlocked = false
@@ -28,7 +26,7 @@ const contextItems = ['purchase', 'parental']
 
 let submit = (pin, context) => {
   return new Promise((resolve, reject) => {
-    if (pin.toString() === Settings.get('platform', 'pin', '0000').toString()) {
+    if (pin.toString() === settings.get('platform', 'pin', '0000').toString()) {
       unlocked = true
       resolve(unlocked)
     } else {
@@ -56,10 +54,10 @@ let pinDialog = null
 
 const contextCheck = context => {
   if (context === undefined) {
-    Log.info('Please provide context explicitly')
+    log.info('Please provide context explicitly')
     return contextItems[0]
   } else if (!contextItems.includes(context)) {
-    Log.warn('Incorrect context provided')
+    log.warn('Incorrect context provided')
     return false
   }
   return context
@@ -69,21 +67,19 @@ const contextCheck = context => {
 export default {
   show() {
     return new Promise((resolve, reject) => {
-      pinDialog = ApplicationInstance.stage.c({
+      pinDialog = appInstance.stage.c({
         ref: 'PinDialog',
         type: PinDialog,
         resolve,
         reject,
       })
-      ApplicationInstance.childList.a(pinDialog)
-      ApplicationInstance.focus = pinDialog
+      appInstance.childList.a(pinDialog)
+      appInstance.focus = pinDialog
     })
   },
   hide() {
-    ApplicationInstance.focus = null
-    ApplicationInstance.children = ApplicationInstance.children.map(
-      child => child !== pinDialog && child
-    )
+    appInstance.focus = null
+    appInstance.children = appInstance.children.map(child => child !== pinDialog && child)
     pinDialog = null
   },
   submit(pin, context) {

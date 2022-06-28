@@ -17,21 +17,21 @@
  * limitations under the License.
  */
 
-import Settings from '../Settings'
+import { settings } from '../SdkPlugins'
 import { defaultProfile } from './defaults'
 
 let getInfo = key => {
-  const profile = { ...defaultProfile, ...Settings.get('platform', 'profile') }
+  const profile = { ...defaultProfile, ...settings.get('platform', 'profile') }
   return Promise.resolve(typeof profile[key] === 'function' ? profile[key]() : profile[key])
 }
 
 let setInfo = (key, params) => {
-  if (key in defaultProfile) defaultProfile[key] = params
+  if (key in defaultProfile) return (defaultProfile[key] = params)
 }
 
 export const initProfile = config => {
-  getInfo = config.getInfo
-  setInfo = config.setInfo
+  getInfo = config.getInfo ? config.getInfo : getInfo
+  setInfo = config.setInfo ? config.setInfo : setInfo
 }
 
 const getOrSet = (key, params) => (params ? setInfo(key, params) : getInfo(key))

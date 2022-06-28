@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import Settings from '../Settings'
+import { settings } from '../SdkPlugins'
 
 const defaultChannels = [
   {
@@ -61,6 +61,6 @@ const defaultChannels = [
   },
 ]
 
-export const channels = () => Settings.get('platform', 'tv', defaultChannels)
+export const channels = () => settings.get('platform', 'tv', defaultChannels)
 
 export const randomChannel = () => channels()[~~(channels.length * Math.random())]

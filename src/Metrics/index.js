@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-import Log from '../Log'
-
-let sendMetric = (type, event, params) => {
-  Log.info('Sending metric', type, event, params)
-}
+import { log } from '../SdkPlugins'
 
 export const initMetrics = config => {
   sendMetric = config.sendMetric
+}
+
+let sendMetric = (type, event, params) => {
+  log.info('Sending metric', type, event, params)
 }
 
 // available metric per category

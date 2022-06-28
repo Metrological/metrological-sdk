@@ -20,9 +20,9 @@
     "@babel/polyfill": "^7.11.5",
     "@michieljs/execute-as-promise": "^1.0.0",
     "deepmerge": "^4.2.2",
-    "localCookie": "github:WebPlatformForEmbedded/localCookie",
     "url-polyfill": "^1.1.10",
-    "whatwg-fetch": "^3.0.0"
+    "whatwg-fetch": "^3.0.0",
+    "@lightningjs/core": "^2.6.0"
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",

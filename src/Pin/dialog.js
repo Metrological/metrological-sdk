@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import Lightning from '../Lightning'
+import Lightning from '@lightningjs/core'
 import Pin from '../Pin'
 
 class PinInput extends Lightning.Component {

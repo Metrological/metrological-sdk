@@ -20,13 +20,11 @@
 import executeAsPromise from '@michieljs/execute-as-promise'
 
 import Metrics from '../Metrics'
-import Log from '../Log'
+import { log, add, settings, appInstance } from '../SdkPlugins'
 
 import events from './events'
 import autoSetupMixin from '../helpers/autoSetupMixin'
 import easeExecution from '../helpers/easeExecution'
-import { ApplicationInstance } from '../Launch'
-import Settings from '../Settings'
 import VideoTexture from './VideoTexture'
 
 export let mediaUrl = url => url
@@ -42,13 +40,23 @@ export const initVideoPlayer = config => {
     mediaUrl = config.mediaUrl
   }
 }
-
 // todo: add this in a 'Registry' plugin
 // to be able to always clean this up on app close
 let eventHandlers = {}
 
 const state = {
+  adsEnabled: false,
   playing: false,
+  _playingAds: false,
+  get playingAds() {
+    return this._playingAds
+  },
+  set playingAds(val) {
+    if (this._playingAds !== val) {
+      this._playingAds = val
+      fireOnConsumer(val === true ? 'AdStart' : 'AdEnd')
+    }
+  },
   skipTime: false,
   playAfterSeek: null,
 }
@@ -112,11 +120,11 @@ export const setupVideoTag = () => {
     return videoEls[0]
   } else {
     const videoEl = document.createElement('video')
-    const platformSettingsWidth = Settings.get('platform', 'width')
-      ? Settings.get('platform', 'width')
+    const platformSettingsWidth = settings.get('platform', 'width')
+      ? settings.get('platform', 'width')
       : 1920
-    const platformSettingsHeight = Settings.get('platform', 'height')
-      ? Settings.get('platform', 'height')
+    const platformSettingsHeight = settings.get('platform', 'height')
+      ? settings.get('platform', 'height')
       : 1080
     videoEl.setAttribute('id', 'video-player')
     videoEl.setAttribute('width', withPrecision(platformSettingsWidth))
@@ -135,20 +143,20 @@ export const setupVideoTag = () => {
 }
 
 export const setUpVideoTexture = () => {
-  if (!ApplicationInstance.tag('VideoTexture')) {
-    const el = ApplicationInstance.stage.c({
+  if (!appInstance.tag('VideoTexture')) {
+    const el = appInstance.stage.c({
       type: VideoTexture,
       ref: 'VideoTexture',
       zIndex: 0,
       videoEl,
     })
-    ApplicationInstance.childList.addAt(el, 0)
+    appInstance.childList.addAt(el, 0)
   }
-  return ApplicationInstance.tag('VideoTexture')
+  return appInstance.tag('VideoTexture')
 }
 
 const registerEventListeners = () => {
-  Log.info('VideoPlayer', 'Registering event listeners')
+  log.info('VideoPlayer', 'Registering event listeners')
   Object.keys(events).forEach(event => {
     const handler = e => {
       // Fire a metric for each event (if it exists on the metrics object)
@@ -168,7 +176,7 @@ const registerEventListeners = () => {
 }
 
 const deregisterEventListeners = () => {
-  Log.info('VideoPlayer', 'Deregistering event listeners')
+  log.info('VideoPlayer', 'Deregistering event listeners')
   Object.keys(eventHandlers).forEach(event => {
     videoEl.removeEventListener(event, eventHandlers[event])
   })
@@ -220,6 +228,26 @@ const videoPlayerPlugin = {
 
     if (this.src == url) {
       this.clear().then(this.open(url, config))
+    } else {
+      const adConfig = { enabled: state.adsEnabled, duration: 300 }
+      if (config.videoId) {
+        adConfig.caid = config.videoId
+      }
+      add.get(adConfig, consumer).then(ads => {
+        state.playingAds = true
+        ads.prerolls().then(() => {
+          state.playingAds = false
+          loader(url, videoEl, config)
+            .then(() => {
+              registerEventListeners()
+              this.show()
+              this.play()
+            })
+            .catch(e => {
+              fireOnConsumer('error', { videoElement: videoEl, event: e })
+            })
+        })
+      })
     }
   },
 
@@ -231,6 +259,15 @@ const videoPlayerPlugin = {
   },
 
   close() {
+    add.cancel()
+    if (state.playingAds) {
+      state.playingAds = false
+      add.stop()
+      // call self in next tick
+      setTimeout(() => {
+        this.close()
+      })
+    }
     if (!this.canInteract) return
     this.clear()
     this.hide()
@@ -318,6 +355,10 @@ const videoPlayerPlugin = {
     }
   },
 
+  enableAds(enabled = true) {
+    state.adsEnabled = enabled
+  },
+
   /* Public getters */
   get duration() {
     return videoEl && (isNaN(videoEl.duration) ? Infinity : videoEl.duration)
@@ -341,6 +382,15 @@ const videoPlayerPlugin = {
 
   get playing() {
     return state.playing
+  },
+
+  get playingAds() {
+    return state.playingAds
+  },
+
+  get canInteract() {
+    // todo: perhaps add an extra flag wether we allow interactions (i.e. pauze, mute, etc.) during ad playback
+    return state.playingAds === false
   },
 
   get top() {
@@ -375,6 +425,10 @@ const videoPlayerPlugin = {
     }
   },
 
+  get adsEnabled() {
+    return state.adsEnabled
+  },
+
   // prefixed with underscore to indicate 'semi-private'
   // because it's not recommended to interact directly with the video element
   get _videoEl() {
@@ -388,14 +442,11 @@ const videoPlayerPlugin = {
 
 export default autoSetupMixin(videoPlayerPlugin, () => {
   precision =
-    (ApplicationInstance &&
-      ApplicationInstance.stage &&
-      ApplicationInstance.stage.getRenderPrecision()) ||
-    precision
+    (appInstance && appInstance.stage && appInstance.stage.getRenderPrecision()) || precision
 
   videoEl = setupVideoTag()
 
-  textureMode = Settings.get('platform', 'textureMode', false)
+  textureMode = settings.get('platform', 'textureMode', false)
   if (textureMode === true) {
     videoEl.setAttribute('crossorigin', 'anonymous')
     videoTexture = setUpVideoTexture()

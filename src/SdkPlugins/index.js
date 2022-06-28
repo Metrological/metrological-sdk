@@ -17,5 +17,14 @@
  * limitations under the License.
  */
 
-import Lightning from '@lightningjs/core'
-export default Lightning
+export let log
+export let settings
+export let appInstance
+export let add
+
+export const initSdkPlugin = (AppInstance, logs, setting, adds) => {
+  log = logs
+  settings = setting
+  add = adds
+  appInstance = AppInstance
+}
