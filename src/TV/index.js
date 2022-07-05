@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import { log } from '../SdkPlugins'
+import { Log } from '../SdkPlugins'
 
 import { channels, randomChannel } from './defaults'
 
@@ -138,7 +138,7 @@ export default {
       callbacks[event] = callbacks[event] || []
       callbacks[event].push(cb)
     } else {
-      log.error('Please provide a function as a callback')
+      Log.error('Please provide a function as a callback')
     }
   },
   removeEventListener(event, cb = false) {

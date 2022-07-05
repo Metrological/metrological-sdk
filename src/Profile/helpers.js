@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import { settings } from '../SdkPlugins'
+import { Settings } from '../SdkPlugins'
 
 const formatLocale = locale => {
   if (locale && locale.length === 2) {
@@ -57,7 +57,7 @@ export const getCountryCode = defaultValue => {
 const hasOrAskForGeoLocationPermission = () => {
   return new Promise(resolve => {
     // force to prompt for location permission
-    if (settings.get('platform', 'forceBrowserGeolocation') === true) resolve(true)
+    if (Settings.get('platform', 'forceBrowserGeolocation') === true) resolve(true)
     if ('permissions' in navigator && typeof navigator.permissions.query === 'function') {
       navigator.permissions.query({ name: 'geolocation' }).then(status => {
         resolve(status.state === 'granted' || status.status === 'granted')

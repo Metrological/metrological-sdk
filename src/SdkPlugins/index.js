@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-export let log
-export let settings
-export let appInstance
-export let add
+export let Log
+export let Settings
+export let ApplicationInstance
+export let Add
 
 export const initSdkPlugin = (AppInstance, logs, setting, adds) => {
-  log = logs
-  settings = setting
-  add = adds
-  appInstance = AppInstance
+  Log = logs
+  Settings = setting
+  Add = adds
+  ApplicationInstance = AppInstance
 }

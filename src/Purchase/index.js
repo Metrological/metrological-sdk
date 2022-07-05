@@ -18,7 +18,7 @@
  */
 
 import Profile from '../Profile'
-import { settings } from '../SdkPlugins'
+import { Settings } from '../SdkPlugins'
 import sequence from '../helpers/sequence'
 
 let cspUrl = 'http://payment-csp-example.metrological.com:8080/'
@@ -182,8 +182,8 @@ export default {
         .then(([household, country, operator, mac, uid]) => {
           billingRequest('/', {
             purchase: signature,
-            identifier: settings.get('app', 'id'),
-            name: settings.get('app', 'id'),
+            identifier: Settings.get('app', 'id'),
+            name: Settings.get('app', 'id'),
             household,
             country,
             operator,

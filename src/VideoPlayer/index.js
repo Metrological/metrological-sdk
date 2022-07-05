@@ -20,7 +20,7 @@
 import executeAsPromise from '@michieljs/execute-as-promise'
 
 import Metrics from '../Metrics'
-import { log, add, settings, appInstance } from '../SdkPlugins'
+import { Log, Add, Settings, ApplicationInstance } from '../SdkPlugins'
 
 import events from './events'
 import autoSetupMixin from '../helpers/autoSetupMixin'
@@ -120,11 +120,11 @@ export const setupVideoTag = () => {
     return videoEls[0]
   } else {
     const videoEl = document.createElement('video')
-    const platformSettingsWidth = settings.get('platform', 'width')
-      ? settings.get('platform', 'width')
+    const platformSettingsWidth = Settings.get('platform', 'width')
+      ? Settings.get('platform', 'width')
       : 1920
-    const platformSettingsHeight = settings.get('platform', 'height')
-      ? settings.get('platform', 'height')
+    const platformSettingsHeight = Settings.get('platform', 'height')
+      ? Settings.get('platform', 'height')
       : 1080
     videoEl.setAttribute('id', 'video-player')
     videoEl.setAttribute('width', withPrecision(platformSettingsWidth))
@@ -143,20 +143,20 @@ export const setupVideoTag = () => {
 }
 
 export const setUpVideoTexture = () => {
-  if (!appInstance.tag('VideoTexture')) {
-    const el = appInstance.stage.c({
+  if (!ApplicationInstance.tag('VideoTexture')) {
+    const el = ApplicationInstance.stage.c({
       type: VideoTexture,
       ref: 'VideoTexture',
       zIndex: 0,
       videoEl,
     })
-    appInstance.childList.addAt(el, 0)
+    ApplicationInstance.childList.addAt(el, 0)
   }
-  return appInstance.tag('VideoTexture')
+  return ApplicationInstance.tag('VideoTexture')
 }
 
 const registerEventListeners = () => {
-  log.info('VideoPlayer', 'Registering event listeners')
+  Log.info('VideoPlayer', 'Registering event listeners')
   Object.keys(events).forEach(event => {
     const handler = e => {
       // Fire a metric for each event (if it exists on the metrics object)
@@ -176,7 +176,7 @@ const registerEventListeners = () => {
 }
 
 const deregisterEventListeners = () => {
-  log.info('VideoPlayer', 'Deregistering event listeners')
+  Log.info('VideoPlayer', 'Deregistering event listeners')
   Object.keys(eventHandlers).forEach(event => {
     videoEl.removeEventListener(event, eventHandlers[event])
   })
@@ -233,7 +233,7 @@ const videoPlayerPlugin = {
       if (config.videoId) {
         adConfig.caid = config.videoId
       }
-      add.get(adConfig, consumer).then(ads => {
+      Add.get(adConfig, consumer).then(ads => {
         state.playingAds = true
         ads.prerolls().then(() => {
           state.playingAds = false
@@ -259,10 +259,10 @@ const videoPlayerPlugin = {
   },
 
   close() {
-    add.cancel()
+    Add.cancel()
     if (state.playingAds) {
       state.playingAds = false
-      add.stop()
+      Add.stop()
       // call self in next tick
       setTimeout(() => {
         this.close()
@@ -442,11 +442,11 @@ const videoPlayerPlugin = {
 
 export default autoSetupMixin(videoPlayerPlugin, () => {
   precision =
-    (appInstance && appInstance.stage && appInstance.stage.getRenderPrecision()) || precision
+    (ApplicationInstance && ApplicationInstance.stage && ApplicationInstance.stage.getRenderPrecision()) || precision
 
   videoEl = setupVideoTag()
 
-  textureMode = settings.get('platform', 'textureMode', false)
+  textureMode = Settings.get('platform', 'textureMode', false)
   if (textureMode === true) {
     videoEl.setAttribute('crossorigin', 'anonymous')
     videoTexture = setUpVideoTexture()

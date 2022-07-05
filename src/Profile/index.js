@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-import { settings } from '../SdkPlugins'
+import { Settings } from '../SdkPlugins'
 import { defaultProfile } from './defaults'
 
 let getInfo = key => {
-  const profile = { ...defaultProfile, ...settings.get('platform', 'profile') }
+  const profile = { ...defaultProfile, ...Settings.get('platform', 'profile') }
   return Promise.resolve(typeof profile[key] === 'function' ? profile[key]() : profile[key])
 }
 

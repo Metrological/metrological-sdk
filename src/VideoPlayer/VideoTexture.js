@@ -18,7 +18,7 @@
  */
 
 import Lightning from '@lightningjs/core'
-import { log } from '../SdkPlugins'
+import { Log } from '../SdkPlugins'
 
 export default class VideoTexture extends Lightning.Component {
   static _template() {
@@ -117,7 +117,7 @@ export default class VideoTexture extends Lightning.Component {
                 this.videoView.scaleX = 1
               }
             } catch (e) {
-              log.error('texImage2d video', e)
+              Log.error('texImage2d video', e)
               this.stop()
             }
             this.videoTexture.source.forceRenderUpdate()
