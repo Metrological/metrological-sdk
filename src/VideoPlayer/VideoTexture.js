@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-import { Lightning } from '../SdkPlugins'
-import { Log } from '../SdkPlugins'
+
+import { Log, Lightning } from '../LightningSdkPlugins'
 
 export default () => {
   return class VideoTexture extends Lightning.Component {

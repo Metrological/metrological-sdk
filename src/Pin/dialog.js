@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import { Lightning } from '../SdkPlugins'
+import { Lightning } from '../LightningSdkPlugins'
 import Pin from '../Pin'
 
 const PinInput = () => {

@@ -20,7 +20,7 @@
 import executeAsPromise from '@michieljs/execute-as-promise'
 
 import Metrics from '../Metrics'
-import { Log, Add, Settings, ApplicationInstance } from '../SdkPlugins'
+import { Log, Add, Settings, ApplicationInstance } from '../LightningSdkPlugins'
 
 import events from './events'
 import autoSetupMixin from '../helpers/autoSetupMixin'

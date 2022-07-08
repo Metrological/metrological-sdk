@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import { Settings } from '../SdkPlugins'
+import { Settings } from '../LightningSdkPlugins'
 
 const formatLocale = locale => {
   if (locale && locale.length === 2) {

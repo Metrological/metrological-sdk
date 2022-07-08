@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import { Settings, ApplicationInstance, Log } from '../SdkPlugins'
+import { Settings, ApplicationInstance, Log } from '../LightningSdkPlugins'
 import PinDialog from './dialog'
 
 // only used during local development

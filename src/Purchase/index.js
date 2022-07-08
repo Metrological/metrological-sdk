@@ -18,7 +18,7 @@
  */
 
 import Profile from '../Profile'
-import { Settings } from '../SdkPlugins'
+import { Settings } from '../LightningSdkPlugins'
 import sequence from '../helpers/sequence'
 
 let cspUrl = 'http://payment-csp-example.metrological.com:8080/'

@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import { Log } from '../SdkPlugins'
+import { Log } from '../LightningSdkPlugins'
 
 export const initMetrics = config => {
   sendMetric = config.sendMetric
