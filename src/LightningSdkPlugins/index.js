@@ -22,9 +22,9 @@ export let Settings
 export let ApplicationInstance
 export let Add
 
-export const initSdkPlugin = (AppInstance, logs, setting, adds) => {
+export const initLightningSdkPlugin = (AppInstance, logs, settings, adds) => {
   Log = logs
-  Settings = setting
+  Settings = settings
   Add = adds
   ApplicationInstance = AppInstance
 }
