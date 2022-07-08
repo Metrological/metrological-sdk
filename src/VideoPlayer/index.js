@@ -145,7 +145,7 @@ export const setupVideoTag = () => {
 export const setUpVideoTexture = () => {
   if (!ApplicationInstance.tag('VideoTexture')) {
     const el = ApplicationInstance.stage.c({
-      type: VideoTexture,
+      type: VideoTexture(),
       ref: 'VideoTexture',
       zIndex: 0,
       videoEl,

@@ -69,7 +69,7 @@ export default {
     return new Promise((resolve, reject) => {
       pinDialog = ApplicationInstance.stage.c({
         ref: 'PinDialog',
-        type: PinDialog,
+        type: PinDialog(),
         resolve,
         reject,
       })
