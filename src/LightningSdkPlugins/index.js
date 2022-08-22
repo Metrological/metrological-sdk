@@ -20,13 +20,23 @@
 export let Log
 export let Settings
 export let ApplicationInstance
-export let Add
+export let Ads
 export let Lightning
 
-export const initLightningSdkPlugin = (AppInstance, logs, settings, adds, lightning) => {
-  Log = logs
-  Settings = settings
-  Add = adds
-  Lightning = lightning
-  ApplicationInstance = AppInstance
+export const initLightningSdkPlugin = {
+  set log(v) {
+    Log = v
+  },
+  set settings(v) {
+    Settings = v
+  },
+  set ads(v) {
+    Ads = v
+  },
+  set lightning(v) {
+    Lightning = v
+  },
+  set appInstance(v) {
+    ApplicationInstance = v
+  }
 }

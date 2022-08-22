@@ -20,7 +20,7 @@
 import executeAsPromise from '@michieljs/execute-as-promise'
 
 import Metrics from '../Metrics'
-import { Log, Add, Settings, ApplicationInstance } from '../LightningSdkPlugins'
+import { Log, Ads, Settings, ApplicationInstance } from '../LightningSdkPlugins'
 
 import events from './events'
 import autoSetupMixin from '../helpers/autoSetupMixin'
@@ -233,7 +233,7 @@ const videoPlayerPlugin = {
       if (config.videoId) {
         adConfig.caid = config.videoId
       }
-      Add.get(adConfig, consumer).then(ads => {
+      Ads.get(adConfig, consumer).then(ads => {
         state.playingAds = true
         ads.prerolls().then(() => {
           state.playingAds = false
@@ -259,10 +259,10 @@ const videoPlayerPlugin = {
   },
 
   close() {
-    Add.cancel()
+    Ads.cancel()
     if (state.playingAds) {
       state.playingAds = false
-      Add.stop()
+      Ads.stop()
       // call self in next tick
       setTimeout(() => {
         this.close()
