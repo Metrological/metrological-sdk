@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.1
+
+*22 aug 2022*
+
+- Fix/metro sdk init sequence ([PR #1](https://github.com/Metrological/metrological-sdk/pull/1))
+
 ## v1.0.0
 
 *19 aug 2022*

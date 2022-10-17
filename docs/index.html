@@ -33,7 +33,8 @@
     window.$docsify = {
       name: 'Metrological SDK',
       repo: 'https://github.com/metrological/metro-sdk',
-      loadSidebar: true,
+      loadSidebar: true,    // Loads custom sidebar from _sidebar.md
+      subMaxLevel: 2,   // Show headings in page as nested levels
       relativePath: true,
       auto2top: true,
       search: {
@@ -43,20 +44,11 @@
         noData: 'No Results!',
         depth: 6,
       },
-      plugins: [
-        function(hook, vm) {
-          hook.ready(function() {
-            fetch('./package.json')
-              .then(response => response.json())
-              .then(data => document.querySelector('.app-name-link').innerHTML += ' <small><a href="#/changelog" style="color: inherit"> ' + data.version + '</a></small>')
-          })
-        }
-      ]
     }
 
   </script>
   <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docsify-themeable@0"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-themeable@0"></script>
   <script src="//unpkg.com/docsify/lib/plugins/search.js"></script>
 </body>
 </html>
