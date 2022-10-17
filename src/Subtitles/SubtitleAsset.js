@@ -17,12 +17,22 @@
  * limitations under the License.
  */
 
-export { default as Metadata, initMetadata } from './src/Metadata'
-export { default as Metrics, initMetrics } from './src/Metrics'
-export { default as Profile, initProfile } from './src/Profile'
-export { default as Purchase, initPurchase } from './src/Purchase'
-export { default as TV, initTV } from './src/TV'
-export { default as Pin, initPin } from './src/Pin'
-export { default as VideoPlayer, initVideoPlayer, mediaUrl } from './src/VideoPlayer'
-export { initLightningSdkPlugin } from './src/LightningSdkPlugins'
-export { default as Subtitles } from './src/Subtitles'
+export default class SubtitleAsset {
+  constructor(obj) {
+    this._start = obj.start // start time to show subtitle in sec
+    this._end = obj.end // end time of showing subtitle in sec
+    this._payload = obj.payload ? obj.payload.replace(/<(.*?)>/g, '') : '' // Remove <v- >, etc tags in subtitle text
+  }
+
+  get start() {
+    return this._start
+  }
+
+  get end() {
+    return this._end
+  }
+
+  get payload() {
+    return this._payload
+  }
+}
