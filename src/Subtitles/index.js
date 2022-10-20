@@ -23,11 +23,18 @@ export default class Subtitles {
   // @return parsed subtitles as list of objects
   // also stores parsed data
   static fetchAndParseSubs(url) {
+    if(url && typeof url === 'string' && url.includes('https://') || url.includes('http://')){
+      console.log('invalid URL')
+      return Promise.reject(new Error('invalid URL'))
+    }
     return fetch(url)
       .then(data => data.text())
       .then(subtitleData => {
         this.clearCurrentSubtitle()
         return this.parseSubtitles(subtitleData)
+      }).catch((error)=> {
+        console.log('Fetching file Failed:', error)
+        this.clearCurrentSubtitle()
       })
   }
 
@@ -37,26 +44,30 @@ export default class Subtitles {
     this._nextSubtitle = null
   }
 
-  // @params timeIndex: time as seconds
-  // @return subtitle as text at passed timeIndex
-  static getSubtitleByTimeIndex(timeIndex) {
+  // @params currentTime: time as seconds
+  // @return subtitle as text at passed currentTime
+  static getSubtitleByTimeIndex(currentTime) {
+    if(!currentTime || isNaN(currentTime) ) {
+      console.log('invalid currentTime')
+      return
+    }
     let self = this
     if (
       this._captions &&
       this._captions.length &&
       this._currentSubtitle &&
       this._nextSubtitle &&
-      Number(timeIndex.toFixed(0)) < Number(this._nextSubtitle.end.toFixed(0)) &&
-      Number(timeIndex.toFixed(0)) >= Number(this._currentSubtitle.start.toFixed(0))
+      Number(currentTime.toFixed(0)) < Number(this._nextSubtitle.end.toFixed(0)) &&
+      Number(currentTime.toFixed(0)) >= Number(this._currentSubtitle.start.toFixed(0))
     ) {
       if (
-        Number(timeIndex.toFixed(0)) >= Number(this._currentSubtitle.start.toFixed(0)) &&
-        Number(timeIndex.toFixed(0)) < Number(this._currentSubtitle.end.toFixed(0))
+        Number(currentTime.toFixed(0)) >= Number(this._currentSubtitle.start.toFixed(0)) &&
+        Number(currentTime.toFixed(0)) < Number(this._currentSubtitle.end.toFixed(0))
       ) {
         return this._currentSubtitle.payload
       } else if (
-        Number(timeIndex.toFixed(0)) >= Number(this._nextSubtitle.start.toFixed(0)) &&
-        Number(timeIndex.toFixed(0)) < Number(this._nextSubtitle.end.toFixed(0))
+        Number(currentTime.toFixed(0)) >= Number(this._nextSubtitle.start.toFixed(0)) &&
+        Number(currentTime.toFixed(0)) < Number(this._nextSubtitle.end.toFixed(0))
       ) {
         return this._nextSubtitle.payload
       } else {
@@ -70,17 +81,17 @@ export default class Subtitles {
       // updates current and next subtitle text values
       if (self._captions && self._captions.length) {
         if (
-          Number(timeIndex.toFixed(0)) <=
+          Number(currentTime.toFixed(0)) <=
           Number(self._captions[self._captions.length - 1].start.toFixed(0))
         ) {
-          if (Number(timeIndex.toFixed(0)) < Number(self._captions[0].end.toFixed(0))) {
+          if (Number(currentTime.toFixed(0)) < Number(self._captions[0].end.toFixed(0))) {
             if (self._captions[1] && self._captions[1].payload) {
               self._nextSubtitle = self._captions[1]
             }
             self._currentSubtitle = self._captions[0]
           } else {
             for (let i = 0; i < self._captions.length; i++) {
-              if (Number(self._captions[i].start.toFixed(0)) >= Number(timeIndex.toFixed(0))) {
+              if (Number(self._captions[i].start.toFixed(0)) >= Number(currentTime.toFixed(0))) {
                 self._captions[i + 1] && self._captions[i + 1].payload
                   ? (self._nextSubtitle = self._captions[i + 1])
                   : { payload: '' }
@@ -153,11 +164,11 @@ export default class Subtitles {
 
   // parses timestamp in subtitle file into seconds
   static parseTimeStamp(s) {
-    let match = s.match(/^(?:([0-9]+):)?([0-5][0-9]):([0-5][0-9](?:[.,][0-9]{0,3})?)/)
+    const match = s.match(/^(?:([0-9]+):)?([0-5][0-9]):([0-5][0-9](?:[.,][0-9]{0,3})?)/)
 
-    let hours = parseInt(match[1] || '0', 10)
-    let minutes = parseInt(match[2], 10)
-    let seconds = parseFloat(match[3].replace(',', '.'))
+    const hours = parseInt(match[1], 10)  || '0'
+    const minutes = parseInt(match[2], 10)
+    const seconds = parseFloat(match[3].replace(',', '.'))
     return seconds + 60 * minutes + 60 * 60 * hours
   }
 }
