@@ -1,5 +1,7 @@
 # Metrological SDK
 
+[![npm version](https://badge.fury.io/js/@metrological%2Fsdk.svg)](https://badge.fury.io/js/@metrological%2Fsdk)
+
 The Metrological SDK contains several plugins and helpers that allow you to build TV apps and deploy them on the Metrological Platform.
 
 The plugins in the Metrological SDK were previously an integral part of the [Lightning-SDK](https://github.com/rdkcentral/Lightning-SDK). Since version 5.0.0 of the Lightning-SDK they have been moved (forked) to their own repository and are fully maintained by the Metrological team, instead of the Lightning Open Source team.
