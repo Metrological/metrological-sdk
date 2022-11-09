@@ -17,25 +17,48 @@
  * limitations under the License.
  */
 
-import SubtitleAsset from './SubtitleAsset.js'
-export default class Subtitles {
+export default class SubtitlesParser {
   // @ params url: subtitle file URL
   // @return parsed subtitles as list of objects
   // also stores parsed data
-  static fetchAndParseSubs(url) {
-    if(url && typeof url === 'string' && url.includes('https://') || url.includes('http://')){
-      console.log('invalid URL')
-      return Promise.reject(new Error('invalid URL'))
+  constructor() {
+    SubtitlesParser.removeSubtitleTextStyles = false
+    SubtitlesParser.clearCurrentSubtitle()
+  }
+  // static _currentSubtitle = null;
+  // static _nextSubtitle = null;
+  // static _captions = null;
+  static fetchAndParseSubs(url, customParser = false, ParseOptions = {}) {
+    const _url = new URL(url)
+    if (_url.protocol !== 'https:' || _url.protocol !== 'https:' || !_url.hostname) {
+      console.log('Invalid URL')
+      return Promise.reject(new Error('Invalid URL'))
     }
-    return fetch(url)
-      .then(data => data.text())
-      .then(subtitleData => {
-        this.clearCurrentSubtitle()
-        return this.parseSubtitles(subtitleData)
-      }).catch((error)=> {
-        console.log('Fetching file Failed:', error)
-        this.clearCurrentSubtitle()
-      })
+    if (ParseOptions && 'removeSubtitleTextStyles' in ParseOptions) {
+      this.removeSubtitleTextStyles = ParseOptions.removeSubtitleTextStyles
+    }
+    return new Promise((resolve, reject) => {
+      fetch(url)
+        .then(data => {
+          let subtitleData = data.text()
+          this.clearCurrentSubtitle()
+          if (customParser && typeof customParser === 'function') {
+            this._captions = customParser(subtitleData)
+          } else {
+            this._captions = this.parseSubtitles(subtitleData)
+          }
+          if (this._captions && this._captions.length) {
+            resolve(this._captions)
+          } else {
+            reject('Failed to parse subtitles: invalid subtitles length')
+          }
+        })
+        .catch(error => {
+          console.log('Fetching file Failed:', error)
+          this.clearCurrentSubtitle()
+          reject('Fetching file Failed')
+        })
+    })
   }
 
   // clears stored subtitles data
@@ -43,11 +66,17 @@ export default class Subtitles {
     this._currentSubtitle = null
     this._nextSubtitle = null
   }
+  static set removeSubtitleTextStyles(v) {
+    this._subtitleTextStyles = !v
+  }
 
   // @params currentTime: time as seconds
   // @return subtitle as text at passed currentTime
   static getSubtitleByTimeIndex(currentTime) {
-    if(!currentTime || isNaN(currentTime) ) {
+    console.log('currentTime:', currentTime)
+    console.log('this._nextSubtitle:', this._nextSubtitle)
+    console.log('this._currentSubtitle:', this._currentSubtitle)
+    if (!currentTime || isNaN(currentTime)) {
       console.log('invalid currentTime')
       return
     }
@@ -117,27 +146,33 @@ export default class Subtitles {
     let cues = []
     let start = null
     let end = null
-    let payload = null
+    let payload = ''
     let lines = linesArray.filter(item => item !== '' && isNaN(item))
-    linesArray = []
+    // linesArray = []
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].indexOf('-->') >= 0) {
         let splitted = lines[i].split(/[ \t]+-->[ \t]+/)
 
-        start = Subtitles.parseTimeStamp(splitted[0])
-        end = Subtitles.parseTimeStamp(splitted[1])
+        start = SubtitlesParser.parseTimeStamp(splitted[0])
+        end = SubtitlesParser.parseTimeStamp(splitted[1])
       } else if (lines[i] !== '') {
         if (start && end) {
           if (i + 1 < lines.length && lines[i + 1].indexOf('-->') >= 0) {
-            let cue = new SubtitleAsset({
+            let subPayload = payload ? payload + ' ' + lines[i] : lines[i]
+            let cue = {
               start,
               end,
-              payload: payload ? payload + ' ' + lines[i] : lines[i],
-            })
+              payload: subPayload
+                ? this._subtitleTextStyles
+                  ? subPayload
+                  : subPayload.replace(/<(.*?)>/g, '')
+                : '', // Remove <v- >, etc tags in subtitle text
+            }
             cues.push(cue)
             start = null
             end = null
-            payload = null
+            payload = ''
+            subPayload = null
           } else {
             payload = payload ? payload + ' ' + lines[i] : lines[i]
           }
@@ -151,22 +186,29 @@ export default class Subtitles {
       }
     }
     if (start && end) {
-      let match = /<(.*?)>/g
-      if (payload) {
-        payload.replace(match, '')
+      // let match = /<(.*?)>/g
+      // if (payload) {
+      //   payload.replace(match, '')
+      // }
+      let cue = {
+        start,
+        end,
+        payload: payload
+          ? this._subtitleTextStyles
+            ? payload
+            : payload.replace(/<(.*?)>/g, '') // Remove <v- >, etc tags in subtitle text
+          : '',
       }
-      let cue = new SubtitleAsset({ start, end, payload })
       cues.push(cue)
     }
-    this._captions = cues
-    return this._captions
+    return cues
   }
 
   // parses timestamp in subtitle file into seconds
   static parseTimeStamp(s) {
     const match = s.match(/^(?:([0-9]+):)?([0-5][0-9]):([0-5][0-9](?:[.,][0-9]{0,3})?)/)
 
-    const hours = parseInt(match[1], 10)  || '0'
+    const hours = parseInt(match[1], 10) || '0'
     const minutes = parseInt(match[2], 10)
     const seconds = parseFloat(match[3].replace(',', '.'))
     return seconds + 60 * minutes + 60 * 60 * hours
