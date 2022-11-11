@@ -26,6 +26,7 @@ import events from './events'
 import autoSetupMixin from '../helpers/autoSetupMixin'
 import easeExecution from '../helpers/easeExecution'
 import VideoTexture from './VideoTexture'
+import SubtitlesParser from '../SubtitlesParser'
 
 export let mediaUrl = url => url
 let videoEl
@@ -60,6 +61,11 @@ const state = {
   skipTime: false,
   playAfterSeek: null,
 }
+const subtitles = {
+  hasSubtitles: false,
+  currentSubtitle: '',
+  previousSubtitle: '',
+}
 
 const hooks = {
   play() {
@@ -83,6 +89,16 @@ const fireOnConsumer = (event, args) => {
   if (consumer) {
     consumer.fire('$videoPlayer' + event, args, videoEl.currentTime)
     consumer.fire('$videoPlayerEvent', event, args, videoEl.currentTime)
+  }
+  if (event === events['timeupdate'] && subtitles.hasSubtitles) {
+    subtitles.currentSubtitle = SubtitlesParser.getSubtitleByTimeIndex(videoEl.currentTime)
+    if (subtitles.previousSubtitle !== subtitles.currentSubtitle) {
+      subtitles.previousSubtitle = subtitles.currentSubtitle
+      fireOnConsumer('SubtitleTextChanged', {
+        text: subtitles.currentSubtitle,
+        startTime: videoEl.currentTime,
+      })
+    }
   }
 }
 
@@ -251,6 +267,25 @@ const videoPlayerPlugin = {
     }
   },
 
+  openSubtitles(url, customParser = false) {
+    if (!this.canInteract) return
+    SubtitlesParser.fetchAndParseSubs(url, customParser)
+      .then(() => {
+        subtitles.hasSubtitles = true
+        fireOnConsumer('SubtitlesReady', {})
+      })
+      .catch(err => {
+        fireOnConsumer('SubtitlesError', { err })
+      })
+  },
+
+  clearSubtitles() {
+    SubtitlesParser.clearCurrentSubtitle()
+    subtitles.hasSubtitles = false
+    subtitles.currentSubtitle = ''
+    subtitles.previousSubtitle = ''
+  },
+
   reload() {
     if (!this.canInteract) return
     const url = videoEl.getAttribute('src')
@@ -280,6 +315,12 @@ const videoPlayerPlugin = {
     this.pause()
     if (textureMode === true) videoTexture.stop()
     return unloader(videoEl).then(() => {
+      if (subtitles.hasSubtitles) {
+        SubtitlesParser.clearCurrentSubtitle()
+        subtitles.hasSubtitles = false
+        subtitles.currentSubtitle = ''
+        subtitles.previousSubtitle = ''
+      }
       fireOnConsumer('Clear', { videoElement: videoEl })
     })
   },
@@ -429,6 +470,14 @@ const videoPlayerPlugin = {
     return state.adsEnabled
   },
 
+  get currentSubtitleText() {
+    if (!subtitles.hasSubtitles) {
+      return null
+    }
+    const _subtitleText = SubtitlesParser.getSubtitleByTimeIndex(this.currentTime)
+    return _subtitleText ? _subtitleText : null
+  },
+
   // prefixed with underscore to indicate 'semi-private'
   // because it's not recommended to interact directly with the video element
   get _videoEl() {
@@ -442,7 +491,10 @@ const videoPlayerPlugin = {
 
 export default autoSetupMixin(videoPlayerPlugin, () => {
   precision =
-    (ApplicationInstance && ApplicationInstance.stage && ApplicationInstance.stage.getRenderPrecision()) || precision
+    (ApplicationInstance &&
+      ApplicationInstance.stage &&
+      ApplicationInstance.stage.getRenderPrecision()) ||
+    precision
 
   videoEl = setupVideoTag()
 

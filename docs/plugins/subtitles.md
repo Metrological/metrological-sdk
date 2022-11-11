@@ -1,6 +1,7 @@
 # Subtitles
 
-subtitle plugin allows you to fetch  and parse subtitle file from a URL and you an read text from the parsed file
+subtitle plugin allows you to fetch  and parse subtitle file from a URL and you can read subtitle text from the parsed file based on current videoPlayback time.
+you can render this subtitle text in your app using text texture.
 
 ## Usage
 

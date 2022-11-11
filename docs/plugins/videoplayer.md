@@ -351,6 +351,39 @@ VideoPlayer.open(videoUrl)
 VideoPlayer.src // http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4
 ```
 
+### SubtitlesParse
+
+you can also parse a subtitle file from a URLand get current subtitles
+
+
+
+```js
+const subtitlesUrl = 'http://abc.def.com/xyz.srt'
+VideoPlayer.openSubtitles(subtitlesUrl)
+```
+### subtitle text
+
+getter that retrieves current subtitle as string based on videoPlayer currenttime,  that can be rendered in your app using text component.
+ ```js
+class DummyComponent extends Lightning.component {
+    // static _template() {
+    //    Subtitles: {
+    //    text: {
+    //        text: '',
+    //        textColor: 0xff000000,
+    //        fontSize: 48,
+    //        textAlign: 'center',
+    //        }
+    //    }
+    }
+    $VidePlayerSubtitlesReady
+    const _subtitleText = VideoPlayer.currentSubtitleText
+    // Subtitles is a tag that already created in your components template
+    this.tag('Subtitles').text = _subtitleText;
+}
+```
+
+
 ### playing
 
 Getter that indicates whether the video player is currently in a *playing* state (`true`) or a *paused* state (`false`).
@@ -476,3 +509,4 @@ The available events are:
 * $videoPlayerVolumeChange
 * $videoPlayerWaiting
 * $videoPlayerClear
+
