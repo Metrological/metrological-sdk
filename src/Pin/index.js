@@ -79,7 +79,9 @@ export default {
   },
   hide() {
     ApplicationInstance.focus = null
-    ApplicationInstance.children = ApplicationInstance.children.map(child => child !== pinDialog && child)
+    ApplicationInstance.children = ApplicationInstance.children.map(
+      child => child !== pinDialog && child
+    )
     pinDialog = null
   },
   submit(pin, context) {

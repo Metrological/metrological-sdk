@@ -65,6 +65,11 @@ const subtitles = {
   hasSubtitles: false,
   currentSubtitle: '',
   previousSubtitle: '',
+  clear: () => {
+    this.hasSubtitles = false
+    this.currentSubtitle = ''
+    this.previousSubtitle = ''
+  },
 }
 
 const hooks = {
@@ -92,12 +97,10 @@ const fireOnConsumer = (event, args) => {
   }
   if (event === events['timeupdate'] && subtitles.hasSubtitles) {
     subtitles.currentSubtitle = SubtitlesParser.getSubtitleByTimeIndex(videoEl.currentTime)
-    if (subtitles.previousSubtitle !== this._currentSubtitle) {
+    if (subtitles.previousSubtitle !== subtitles.currentSubtitle) {
       subtitles.previousSubtitle = subtitles.currentSubtitle
-      fireOnConsumer('SubtitleTextChanged', {
-        text: this._currentSubtitle,
-        startTime: videoEl.currentTime,
-      })
+      // firing SubtitleTextChanged event on consumer if text is changed
+      fireOnConsumer('SubtitleTextChanged', subtitles.currentSubtitle)
     }
   }
 }
@@ -267,23 +270,28 @@ const videoPlayerPlugin = {
     }
   },
 
-  openSubtitles(url, customParser = false) {
+  // open subtitle file
+  // @ params url: subtitle file URL
+  // @ customParser: a customParser to use instead of default parser of the plugin
+  // @ parseOptions.removeSubtitleTextStyles: remove subtitle textstyles possible value true or false
+  // @return parsed subtitles as list of objects
+  openSubtitles(url, customParser = false, options = { removeSubtitleTextStyles: true }) {
     if (!this.canInteract) return
-    SubtitlesParser.fetchAndParseSubs(url, customParser)
+    SubtitlesParser.fetchAndParseSubs(url, customParser, options)
       .then(() => {
         subtitles.hasSubtitles = true
-        fireOnConsumer('SubtitlesReady', {})
+        fireOnConsumer('SubtitlesReady', {}) // fire's on consumer when subtitles are ready
       })
       .catch(err => {
-        fireOnConsumer('SubtitlesError', { err })
+        subtitles.hasSubtitles = false
+        fireOnConsumer('SubtitlesError', err) // fire's on consumer when fetching subtitles failed
       })
   },
 
+  // clear all subtitle related data
   clearSubtitles() {
-    SubtitlesParser.clearCurrentSubtitle()
-    subtitles.hasSubtitles = false
-    subtitles.currentSubtitle = ''
-    subtitles.previousSubtitle = ''
+    SubtitlesParser.clearAllSubtitles()
+    subtitles.clear()
   },
 
   reload() {
@@ -316,10 +324,7 @@ const videoPlayerPlugin = {
     if (textureMode === true) videoTexture.stop()
     return unloader(videoEl).then(() => {
       if (subtitles.hasSubtitles) {
-        SubtitlesParser.clearCurrentSubtitle()
-        subtitles.hasSubtitles = false
-        subtitles.currentSubtitle = ''
-        subtitles.previousSubtitle = ''
+        this.clearSubtitles()
       }
       fireOnConsumer('Clear', { videoElement: videoEl })
     })
@@ -475,7 +480,7 @@ const videoPlayerPlugin = {
       return null
     }
     const _subtitleText = SubtitlesParser.getSubtitleByTimeIndex(this.currentTime)
-    return _subtitleText ? _subtitleText : null
+    return _subtitleText ? _subtitleText : ''
   },
 
   // prefixed with underscore to indicate 'semi-private'
