@@ -38,9 +38,8 @@ export default class SubtitlesParser {
 
     return new Promise((resolve, reject) => {
       fetch(url)
-        .then(data => {
-          let subtitleData = data.text()
-
+        .then(data => data.text())
+        .then(subtitleData => {
           this.clearAllSubtitles()
           if (customParser && typeof customParser === 'function') {
             this._captions = customParser(subtitleData)

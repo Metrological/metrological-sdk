@@ -65,7 +65,7 @@ const subtitles = {
   hasSubtitles: false,
   currentSubtitle: '',
   previousSubtitle: '',
-  clear: () => {
+  clear() {
     this.hasSubtitles = false
     this.currentSubtitle = ''
     this.previousSubtitle = ''
@@ -292,6 +292,7 @@ const videoPlayerPlugin = {
   clearSubtitles() {
     SubtitlesParser.clearAllSubtitles()
     subtitles.clear()
+    fireOnConsumer('SubtitlesCleared') // fire's on consumer on clearing subtitless
   },
 
   reload() {
@@ -475,6 +476,7 @@ const videoPlayerPlugin = {
     return state.adsEnabled
   },
 
+  // to get current subtitles
   get currentSubtitleText() {
     if (!subtitles.hasSubtitles) {
       return null

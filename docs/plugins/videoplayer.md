@@ -542,3 +542,12 @@ class DummyComponent extends Lightning.component {
 }
 ```
 
+
+### clearSubtitles
+
+clears all store subtitles in plugin
+
+```js
+VideoPlayer.clearSubtitles()
+```
+on successful clearing of subtitles $videoPlayerSubtitlesCleared is fired on the consumer.
