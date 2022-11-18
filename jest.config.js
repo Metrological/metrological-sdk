@@ -13,7 +13,7 @@ module.exports = {
       lines: 70,
     },
   },
-  testEnvironment: 'jsdom', // jsdom
+  testEnvironment: 'jsdom',
   testEnvironmentOptions: { resources: 'usable' },
   moduleNameMapper: {
     '@/(.*)$': '<rootDir>/src/$1',
@@ -23,5 +23,4 @@ module.exports = {
   transform: { '^.+\\.[m|t]?js$': 'babel-jest' },
   transformIgnorePatterns: [],
   verbose: true,
-  testURL: 'http://github.com/andreyvit/subtitle-tools/blob/master/sample.srt',
 }
