@@ -504,6 +504,14 @@ the third argument to keep text styles in subtitle string
 ```js
 const subtitlesUrl = 'http://abc.def.com/xyz.srt'
 VideoPlayer.openSubtitles(subtitlesUrl, null, {removeSubtitleTextStyles: false})
+
+$videoPlayerSubtitlesReady() {
+    Log.info('subtitles are parsed and ready to use')
+}
+$videoPlayerSubtitlesError() {
+    Log.error('Failed to parse subtitle file')
+}
+
 ```
 on successful parsing of subtitles $videoPlayerSubtitlesReady is fired on the consumer.
 if VideoPlayer fails to parse subtitles a $videoPlayerSubtitlesError is fired on the consumer. error returned as first argument.
@@ -548,6 +556,9 @@ class DummyComponent extends Lightning.component {
 clears all store subtitles in plugin
 
 ```js
+$videoPlayerSubtitlesCleared() {
+    Log.info('Subtitles Cleared')
+}
 VideoPlayer.clearSubtitles()
 ```
 on successful clearing of subtitles $videoPlayerSubtitlesCleared is fired on the consumer.

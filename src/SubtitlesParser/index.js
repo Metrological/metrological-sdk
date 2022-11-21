@@ -30,7 +30,14 @@ export default class SubtitlesParser {
     customParser = false,
     parseOptions = { removeSubtitleTextStyles: true }
   ) {
-    const _url = new URL(url)
+    let _url
+
+    try {
+      _url = new URL(url)
+    } catch (e) {
+      Log.info('Invalid URL')
+      return Promise.reject(new Error('Invalid URL'))
+    }
     if (!((_url.protocol === 'https:' || _url.protocol === 'http:') && _url.hostname)) {
       Log.info('Invalid subtitle Url')
       return Promise.reject(new Error('Invalid URL'))
@@ -46,11 +53,10 @@ export default class SubtitlesParser {
           } else {
             this._captions = this.parseSubtitles(subtitleData, parseOptions)
           }
-          if (this._captions && this._captions.length) {
-            resolve(this._captions)
-          } else {
-            reject('Failed to parse subtitles: invalid subtitles length')
+          if (!this._captions.length) {
+            Log.warn('Invalid subtitles length')
           }
+          resolve(this._captions)
         })
         .catch(error => {
           Log.error('Fetching subtitles file Failed:', error)
@@ -62,28 +68,36 @@ export default class SubtitlesParser {
 
   // clears stored subtitles data
   static clearAllSubtitles() {
-    this._captions = null
+    this._captions = []
+    this._lastIndex = 0
+    this._previousCueTimeIndex = 0
+    this._previousCue = ''
   }
 
   // get current subtitles
   // @ currentTime: currentTime in seconds
   // @return: subtitle text at that currentTime
   static getSubtitleByTimeIndex(currentTime) {
-    if (currentTime === undefined || isNaN(currentTime) || typeof currentTime !== 'number') {
-      throw new Error('You should pass a currentTime to fetch the current subtitle')
+    if (typeof currentTime !== 'number' || currentTime === Infinity) {
+      throw new Error('You should pass "currentTime" as a number')
     }
 
     if (!Array.isArray(this._captions) || this._captions.length <= 0) {
-      throw new Error("didn't find and stored captions in plugin")
+      throw new Error('No subtitles available')
+    }
+
+    if (Math.abs(this._previousCueTimeIndex - currentTime) < 0.5) {
+      return this._previousCue
     }
 
     if (this._lastIndex > this._captions.length - 1 || !this._lastIndex) {
       this._lastIndex = 0
     }
     const activeIndex = this.getActiveIndex(currentTime) // find active cue from the captions stored
-
+    this._previousCueTimeIndex = currentTime
     if (activeIndex !== -1 && activeIndex <= this._captions.length - 1) {
-      return this._captions[activeIndex].payload
+      this._previousCue = this._captions[activeIndex].payload
+      return this._previousCue
     } else if (activeIndex === -1) {
       return ''
     }
@@ -120,7 +134,7 @@ export default class SubtitlesParser {
     let end = null
     let payload = ''
     let lines = linesArray.filter(item => item !== '' && isNaN(item))
-    // linesArray = []
+    console.log('lines:', lines)
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].indexOf('-->') >= 0) {
         let splitted = lines[i].split(/[ \t]+-->[ \t]+/)
@@ -158,10 +172,6 @@ export default class SubtitlesParser {
       }
     }
     if (start && end) {
-      let match = /<(.*?)>/g
-      if (payload) {
-        payload.replace(match, '')
-      }
       let cue = {
         start,
         end,

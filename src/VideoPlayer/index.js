@@ -62,13 +62,13 @@ const state = {
   playAfterSeek: null,
 }
 const subtitles = {
-  hasSubtitles: false,
-  currentSubtitle: '',
-  previousSubtitle: '',
+  enabled: false,
+  currentCue: '',
+  previousCue: '',
   clear() {
-    this.hasSubtitles = false
-    this.currentSubtitle = ''
-    this.previousSubtitle = ''
+    this.enabled = false
+    this.currentCue = ''
+    this.previousCue = ''
   },
 }
 
@@ -95,12 +95,12 @@ const fireOnConsumer = (event, args) => {
     consumer.fire('$videoPlayer' + event, args, videoEl.currentTime)
     consumer.fire('$videoPlayerEvent', event, args, videoEl.currentTime)
   }
-  if (event === events['timeupdate'] && subtitles.hasSubtitles) {
-    subtitles.currentSubtitle = SubtitlesParser.getSubtitleByTimeIndex(videoEl.currentTime)
-    if (subtitles.previousSubtitle !== subtitles.currentSubtitle) {
-      subtitles.previousSubtitle = subtitles.currentSubtitle
+  if (event === events['timeupdate'] && subtitles.enabled) {
+    subtitles.currentCue = SubtitlesParser.getSubtitleByTimeIndex(videoEl.currentTime)
+    if (subtitles.previousCue !== subtitles.currentCue) {
+      subtitles.previousCue = subtitles.currentCue
       // firing SubtitleTextChanged event on consumer if text is changed
-      fireOnConsumer('SubtitleTextChanged', subtitles.currentSubtitle)
+      fireOnConsumer('SubtitleTextChanged', subtitles.currentCue)
     }
   }
 }
@@ -279,11 +279,11 @@ const videoPlayerPlugin = {
     if (!this.canInteract) return
     SubtitlesParser.fetchAndParseSubs(url, customParser, options)
       .then(() => {
-        subtitles.hasSubtitles = true
+        subtitles.enabled = true
         fireOnConsumer('SubtitlesReady', {}) // fire's on consumer when subtitles are ready
       })
       .catch(err => {
-        subtitles.hasSubtitles = false
+        subtitles.enabled = false
         fireOnConsumer('SubtitlesError', err) // fire's on consumer when fetching subtitles failed
       })
   },
@@ -324,7 +324,7 @@ const videoPlayerPlugin = {
     this.pause()
     if (textureMode === true) videoTexture.stop()
     return unloader(videoEl).then(() => {
-      if (subtitles.hasSubtitles) {
+      if (subtitles.enabled) {
         this.clearSubtitles()
       }
       fireOnConsumer('Clear', { videoElement: videoEl })
@@ -478,11 +478,10 @@ const videoPlayerPlugin = {
 
   // to get current subtitles
   get currentSubtitleText() {
-    if (!subtitles.hasSubtitles) {
+    if (!subtitles.enabled) {
       return null
     }
-    const _subtitleText = SubtitlesParser.getSubtitleByTimeIndex(this.currentTime)
-    return _subtitleText ? _subtitleText : ''
+    return subtitles.currentCue ? subtitles.currentCue : ''
   },
 
   // prefixed with underscore to indicate 'semi-private'
