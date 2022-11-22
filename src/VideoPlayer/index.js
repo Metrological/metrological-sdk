@@ -280,11 +280,11 @@ const videoPlayerPlugin = {
     SubtitlesParser.fetchAndParseSubs(url, customParser, options)
       .then(cues => {
         if (!Array.isArray(cues) || cues.length <= 0) {
-          subtitles.enabled = true
-          fireOnConsumer('SubtitlesReady', {}) // fire's on consumer when subtitles are ready
-        } else {
           subtitles.enabled = false
           fireOnConsumer('SubtitlesError', 'No subtitles available') // fire's on consumer when subtitles are empty
+        } else {
+          subtitles.enabled = true
+          fireOnConsumer('SubtitlesReady', {}) // fire's on consumer when subtitles are ready
         }
       })
       .catch(err => {
