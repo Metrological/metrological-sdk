@@ -99,6 +99,7 @@ export default class SubtitlesParser {
       this._previousCue = this._captions[activeIndex].payload
       return this._previousCue
     } else if (activeIndex === -1) {
+      this._previousCue = ''
       return ''
     }
   }

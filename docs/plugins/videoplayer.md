@@ -485,7 +485,7 @@ subtitle plugin allows you to fetch and parse the subtitle file from the given U
 const subtitlesUrl = 'http://abc.def.com/xyz.srt'
 VideoPlayer.openSubtitles(subtitlesUrl)
 ```
-If you don't want to use the default parser you can also pass a custom parser as a callback as the second argument.
+Default parser in subtitle plugin can parse .srt and .vvt files. If you don't want to use the default parser you can also pass a custom parser as a callback as the second argument.
 
 NOTE: customParser must return list of subtitle object contains {start: \<float\>, end: \<float\>, payload: \<string\>}
 
@@ -562,3 +562,5 @@ $videoPlayerSubtitlesCleared() {
 VideoPlayer.clearSubtitles()
 ```
 on successful clearing of subtitles $videoPlayerSubtitlesCleared is fired on the consumer.
+
+You can also use subtitles as an individual plugin without videoPlayer. More information on how to use subtitlesParser plugin can be found [here](./subtitles.md).
