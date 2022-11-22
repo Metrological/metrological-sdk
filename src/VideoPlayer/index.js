@@ -278,9 +278,14 @@ const videoPlayerPlugin = {
   openSubtitles(url, customParser = false, options = { removeSubtitleTextStyles: true }) {
     if (!this.canInteract) return
     SubtitlesParser.fetchAndParseSubs(url, customParser, options)
-      .then(() => {
-        subtitles.enabled = true
-        fireOnConsumer('SubtitlesReady', {}) // fire's on consumer when subtitles are ready
+      .then(cues => {
+        if (!Array.isArray(cues) || cues.length <= 0) {
+          subtitles.enabled = true
+          fireOnConsumer('SubtitlesReady', {}) // fire's on consumer when subtitles are ready
+        } else {
+          subtitles.enabled = false
+          fireOnConsumer('SubtitlesError', 'No subtitles available') // fire's on consumer when subtitles are empty
+        }
       })
       .catch(err => {
         subtitles.enabled = false

@@ -1,13 +1,13 @@
-# Subtitles
+# SubtitlesParser
 
 subtitle plugin allows you to fetch and parse the subtitle file from the given URL and you can read the subtitle text from the parsed file based on the current videoplayback time.
 
 ## Usage
 
-If you want to access Subtitles in your App code directly, import the *Subtitles* plugin from the Lightning SDK:
+If you want to access SubtitlesParser in your App code directly, import the *SubtitlesParser* plugin from the Lightning SDK:
 
 ```js
-import { Subtitles } from '@lightningjs/sdk'
+import { SubtitlesParser } from '@lightningjs/sdk'
 ```
 
 
@@ -20,7 +20,7 @@ This method will fetch a file from the URL and parse it to create a list of obje
 This method returns a promise that resolves to parsed subtitles as a list of objects containing {start, end, payload}.
 ```js
 const subtitlesUrl = 'http://abc.def.com/xyz.srt'
-Subtitles.fetchAndParseSubs(URL)
+SubtitlesParser.fetchAndParseSubs(URL)
 ```
 ### customParser
 
@@ -35,7 +35,7 @@ const customParser = (str) = {
     return [{start: 3, end: 10, payload: 'this is subtitle text'}, { start: 11, end: 14, payload: 'this is subtitle text2'}, ...]
 }
 const subtitlesUrl = 'http://abc.def.com/xyz.srt'
-Subtitles.fetchAndParseSubs(URL, customParser)
+SubtitlesParser.fetchAndParseSubs(URL, customParser)
 ```
 
 ### removeSubtitleTextStyles
@@ -44,13 +44,13 @@ By default, all the TextStyles in the subtitle string are removed, you can pass 
 the third argument to keep text styles in subtitle string
 
 ```js
-Subtitles.fetchAndParseSubs(URL, null, {removeSubtitleTextStyles: false})
+SubtitlesParser.fetchAndParseSubs(URL, null, {removeSubtitleTextStyles: false})
 ```
 ### getSubtitleByTimeIndex
 From the stored subtitles you can get subtitles as text when you pass currentTime(in seconds) as an argument to the method.
 
 ```js
-Subtitles.getSubtitleByTimeIndex(currentTime)
+SubtitlesParser.getSubtitleByTimeIndex(currentTime)
 ```
 
 ### clearCurrentSubtitle
@@ -58,6 +58,6 @@ Subtitles.getSubtitleByTimeIndex(currentTime)
 `clearCurrentSubtitle` method will clear all the stored subtitles in the plugin.
 
 ```js
-Subtitles.clearCurrentSubtitle()
+SubtitlesParser.clearCurrentSubtitle()
 ```
 

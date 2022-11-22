@@ -563,4 +563,4 @@ VideoPlayer.clearSubtitles()
 ```
 on successful clearing of subtitles $videoPlayerSubtitlesCleared is fired on the consumer.
 
-You can also use subtitles as an individual plugin without videoPlayer. More information on how to use subtitlesParser plugin can be found [here](./subtitles.md).
+You can also use subtitles as an individual plugin without videoPlayer. More information on how to use subtitlesParser plugin can be found [here](./subtitlesParser.md).
