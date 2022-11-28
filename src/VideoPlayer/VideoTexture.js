@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-
 import { Log, Lightning } from '../LightningSdkPlugins'
 
 export default () => {
@@ -67,7 +66,11 @@ export default () => {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-      this.videoTexture.options = { source: glTexture, w: this.videoEl.width, h: this.videoEl.height }
+      this.videoTexture.options = {
+        source: glTexture,
+        w: this.videoEl.width,
+        h: this.videoEl.height,
+      }
 
       this.videoView.w = this.videoEl.width / this.stage.getRenderPrecision()
       this.videoView.h = this.videoEl.height / this.stage.getRenderPrecision()
@@ -148,29 +151,24 @@ export default () => {
 
     position(top, left) {
       this.videoView.patch({
-        smooth: {
-          x: left,
-          y: top,
-        },
+        x: left,
+        y: top,
       })
     }
 
     size(width, height) {
       this.videoView.patch({
-        smooth: {
-          w: width,
-          h: height,
-        },
+        w: width,
+        h: height,
       })
     }
 
     show() {
-      this.videoView.setSmooth('alpha', 1)
+      this.videoView.alpha = 1
     }
 
     hide() {
-      this.videoView.setSmooth('alpha', 0)
+      this.videoView.alpha = 0
     }
   }
 }
-
