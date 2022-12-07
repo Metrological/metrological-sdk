@@ -2,6 +2,7 @@
   "name": "@metrological/sdk",
   "version": "1.0.0",
   "license": "Apache-2.0",
+  "type": "module",
   "scripts": {
     "lint": "eslint '**/*.js'",
     "release": "npm publish --access public"
