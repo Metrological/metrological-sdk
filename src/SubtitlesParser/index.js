@@ -38,7 +38,7 @@ export default class SubtitlesParser {
       Log.info('Invalid URL')
       return Promise.reject(new Error('Invalid URL'))
     }
-    if (!((_url.protocol === 'https:' || _url.protocol === 'http:') && _url.hostname)) {
+    if (!(_url.protocol === 'https:' || _url.protocol === 'http:')) {
       Log.info('Invalid subtitle Url')
       return Promise.reject(new Error('Invalid URL'))
     }
@@ -70,7 +70,6 @@ export default class SubtitlesParser {
   static clearAllSubtitles() {
     this._captions = []
     this._lastIndex = 0
-    this._previousCueTimeIndex = 0
     this._previousCue = ''
   }
 
@@ -86,29 +85,24 @@ export default class SubtitlesParser {
       throw new Error('No subtitles available')
     }
 
-    if (Math.abs(this._previousCueTimeIndex - currentTime) < 0.5) {
-      return this._previousCue
-    }
-
-    if (this._lastIndex > this._captions.length - 1 || !this._lastIndex) {
-      this._lastIndex = 0
-    }
     const activeIndex = this.getActiveIndex(currentTime) // find active cue from the captions stored
-    this._previousCueTimeIndex = currentTime
-    if (activeIndex !== -1 && activeIndex <= this._captions.length - 1) {
+    if (activeIndex !== -1) {
       this._previousCue = this._captions[activeIndex].payload
       return this._previousCue
-    } else if (activeIndex === -1) {
+    } else {
       this._previousCue = ''
       return ''
     }
   }
 
   static getActiveIndex(currentTime) {
+    if (this._lastIndex > this._captions.length - 1 || !this._lastIndex) {
+      this._lastIndex = 0
+    }
     let _activeIndex = this._captions
       .slice(this._lastIndex)
       .findIndex(cue => currentTime >= cue.start && currentTime < cue.end)
-    if (_activeIndex !== -1) {
+    if (_activeIndex !== -1 && _activeIndex <= this._captions.length - 1) {
       return _activeIndex + this._lastIndex
     } else {
       return this._captions
@@ -135,7 +129,6 @@ export default class SubtitlesParser {
     let end = null
     let payload = ''
     let lines = linesArray.filter(item => item !== '' && isNaN(item))
-    console.log('lines:', lines)
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].indexOf('-->') >= 0) {
         let splitted = lines[i].split(/[ \t]+-->[ \t]+/)

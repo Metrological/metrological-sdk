@@ -65,10 +65,12 @@ const subtitles = {
   enabled: false,
   currentCue: '',
   previousCue: '',
+  currentCueTime: 0,
   clear() {
     this.enabled = false
     this.currentCue = ''
     this.previousCue = ''
+    this.currentCueTime = 0
   },
 }
 
@@ -95,7 +97,12 @@ const fireOnConsumer = (event, args) => {
     consumer.fire('$videoPlayer' + event, args, videoEl.currentTime)
     consumer.fire('$videoPlayerEvent', event, args, videoEl.currentTime)
   }
-  if (event === events['timeupdate'] && subtitles.enabled) {
+  if (
+    event === events['timeupdate'] &&
+    subtitles.enabled &&
+    Math.abs(subtitles.currentCueTime - videoEl.currentTime) < 0.5
+  ) {
+    subtitles.currentCueTime = videoEl.currentTime
     subtitles.currentCue = SubtitlesParser.getSubtitleByTimeIndex(videoEl.currentTime)
     if (subtitles.previousCue !== subtitles.currentCue) {
       subtitles.previousCue = subtitles.currentCue
