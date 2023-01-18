@@ -120,25 +120,25 @@ export default class SubtitlesParser {
     let linesArray = plainSub
       .trim()
       .replace('\r\n', '\n')
+      .replace('WEBVTT', '')
       .split(/[\r\n]/)
-      .map(line => {
-        return line.trim()
-      })
+      .map(line => line.trim())
     let cues = []
     let start = null
     let end = null
     let payload = ''
     let lines = linesArray.filter(item => item !== '' && isNaN(item))
     for (let i = 0; i < lines.length; i++) {
+      // find Start and end time of the subtitle separated by –-> characters
       if (lines[i].indexOf('-->') >= 0) {
-        let splitted = lines[i].split(/[ \t]+-->[ \t]+/)
-
-        start = SubtitlesParser.parseTimeStamp(splitted[0])
-        end = SubtitlesParser.parseTimeStamp(splitted[1])
-      } else if (lines[i] !== '') {
+        let times = lines[i].split(/[ \t]+-->[ \t]+/)
+        start = SubtitlesParser.parseTimeStamp(times[0])
+        end = SubtitlesParser.parseTimeStamp(times[1])
+      } else {
+        // join multiline subtitles with newline and create a subtitle cue
         if (start && end) {
-          if (i + 1 < lines.length && lines[i + 1].indexOf('-->') >= 0) {
-            let subPayload = payload ? payload + ' ' + lines[i] : lines[i]
+          if (i + 1 >= lines.length || lines[i + 1].indexOf('-->') >= 0) {
+            let subPayload = payload ? payload + '\n' + lines[i] : lines[i]
             let cue = {
               start,
               end,
@@ -154,28 +154,10 @@ export default class SubtitlesParser {
             payload = ''
             subPayload = null
           } else {
-            payload = payload ? payload + ' ' + lines[i] : lines[i]
+            payload = payload ? payload + '\n' + lines[i] : lines[i]
           }
         }
-      } else if (start && end) {
-        if (payload == null) {
-          payload = lines[i]
-        } else {
-          payload += ' ' + lines[i]
-        }
       }
-    }
-    if (start && end) {
-      let cue = {
-        start,
-        end,
-        payload: payload
-          ? this._removeSubtitleTextStyles
-            ? payload.replace(/<(.*?)>/g, '') // Remove <v- >, etc tags in subtitle text
-            : payload
-          : '',
-      }
-      cues.push(cue)
     }
     return cues
   }
