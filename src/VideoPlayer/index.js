@@ -100,7 +100,7 @@ const fireOnConsumer = (event, args) => {
   if (
     event === events['timeupdate'] &&
     subtitles.enabled &&
-    Math.abs(subtitles.currentCueTime - videoEl.currentTime) < 0.5
+    Math.abs(subtitles.currentCueTime - videoEl.currentTime) > 0.5
   ) {
     subtitles.currentCueTime = videoEl.currentTime
     subtitles.currentCue = SubtitlesParser.getSubtitleByTimeIndex(videoEl.currentTime)

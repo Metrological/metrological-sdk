@@ -516,16 +516,11 @@ $videoPlayerSubtitlesError() {
 on successful parsing of subtitles $videoPlayerSubtitlesReady is fired on the consumer.
 if VideoPlayer fails to parse subtitles a $videoPlayerSubtitlesError is fired on the consumer. error returned as first argument.
 
-
-### currentSubtitleText
-
-getter that retrieves the current subtitle as a string based on videoPlayer currentTime, which can be rendered in your app using the text component.
-or
+### SubtitleTextChanged
 you can use the $VidePlayerSubtitleTextChanged event that fires when there is a subtitle text change, in this event you will receive
-subtitle string as the first argument.
-videoPlayer current time as the second argument.
+subtitle string as the first argument, which can be rendered in your app using the text component, and you get videoPlayer current time as the second argument.
  ```js
-class DummyComponent extends Lightning.component {
+class SubtitlesComponent extends Lightning.component {
     static _template() {
         return {
             Subtitles: {
@@ -542,11 +537,43 @@ class DummyComponent extends Lightning.component {
     $videoPlayerSubtitleTextChanged(text, currentTime){
         const _subtitleText = text || ''// current subtitle to render depending on video playback
         // update subtitle text to your template
-        this.tag('Subtitles').text = _subtitleText;
+        this.tag('Subtitles').text.text = _subtitleText;
+    }
+}
+```
+If you don't want to depend on $VidePlayerSubtitleTextChanged, you can use currentSubtitleText
+### currentSubtitleText
+getter that retrieves the current subtitle as a string based on videoPlayer currentTime, which can be rendered in your app using the text component.
+ ```js
+class SubtitlesComponent extends Lightning.component {
+    static _template() {
+        return {
+            Subtitles: {
+                text: {
+                    text: ''
+                    textColor: 0xff000000,
+                    fontSize: 48,
+                    textAlign: 'center',
+                }
+            }
+        }
     }
 
-    const _subtitleText = VideoPlayer.currentSubtitleText || ''
-    this.tag('Subtitles').text = _subtitleText;
+    _active(){
+        this.showSubtitles()
+    }
+    _inactive(){
+        Registry.clearInterval(this.subsIntervalID)
+        this.subsIntervalID = null
+    }
+
+    showSubtitles(){
+        if(!this.subsIntervalID) {
+            this.subsIntervalID = Registry.setInterval(() => {
+            this.tag('Subtitles').text.text = VideoPlayer.currentSubtitleText || ''
+            }, 500)
+        }
+    }
 }
 ```
 

@@ -218,7 +218,6 @@ describe('clearAllSubtitles', () => {
     SubtitlesParser.clearAllSubtitles()
     expect(SubtitlesParser._captions.length).toStrictEqual(0)
     expect(SubtitlesParser._lastIndex).toStrictEqual(0)
-    // expect(SubtitlesParser._previousCueTimeIndex).toStrictEqual(0)
     expect(SubtitlesParser._previousCue).toStrictEqual('')
   })
   it('Should throw an error on getSubtitleByTimeIndex()', () => {
@@ -245,16 +244,6 @@ describe('getActiveIndex', () => {
     expect(SubtitlesParser.getActiveIndex(2)).toStrictEqual(0)
     expect(SubtitlesParser.getActiveIndex(-1)).toStrictEqual(-1)
   })
-
-  // it('Should not call getActiveIndex when called with in 0.5s', () => {
-  //   jest.spyOn(SubtitlesParser, 'getActiveIndex').mockImplementation(() => 1)
-  //   SubtitlesParser.getSubtitleByTimeIndex(4)
-  //   SubtitlesParser.getSubtitleByTimeIndex(4.4)
-  //   expect(SubtitlesParser.getActiveIndex).toBeCalledTimes(1)
-  //   SubtitlesParser.getSubtitleByTimeIndex(4.6)
-  //   expect(SubtitlesParser.getActiveIndex).toBeCalledTimes(2)
-  //   SubtitlesParser.getActiveIndex.mockRestore()
-  // })
 })
 
 describe('parseSubtitles', () => {

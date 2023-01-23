@@ -20,11 +20,11 @@ This method will fetch a file from the URL and parse it to create a list of obje
 This method returns a promise that resolves to parsed subtitles as a list of objects containing {start, end, payload}.
 ```js
 const subtitlesUrl = 'http://abc.def.com/xyz.srt'
-SubtitlesParser.fetchAndParseSubs(URL)
+SubtitlesParser.fetchAndParseSubs(subtitlesUrl)
 ```
 ### customParser
 
-you can also send a customParser as a callback to `fetchAndParseSubs` as a second argument, customParser should return a list of subtitle objects that contains
+Default parser in subtitle plugin can parse .srt and .vvt files. If you don't want to use the default parser you can also send a customParser as a callback to `fetchAndParseSubs` as a second argument, customParser should return a list of subtitle objects that contains
 {start: <float>, end: <float>, payload: <string>}
 
 
@@ -35,7 +35,7 @@ const customParser = (str) = {
     return [{start: 3, end: 10, payload: 'this is subtitle text'}, { start: 11, end: 14, payload: 'this is subtitle text2'}, ...]
 }
 const subtitlesUrl = 'http://abc.def.com/xyz.srt'
-SubtitlesParser.fetchAndParseSubs(URL, customParser)
+SubtitlesParser.fetchAndParseSubs(subtitlesUrl, customParser)
 ```
 
 ### removeSubtitleTextStyles
