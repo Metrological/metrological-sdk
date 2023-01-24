@@ -476,3 +476,118 @@ The available events are:
 * $videoPlayerVolumeChange
 * $videoPlayerWaiting
 * $videoPlayerClear
+
+### SubtitlesParse
+
+subtitle plugin allows you to fetch and parse the subtitle file from the given URL and you can read the subtitle text from the parsed file based on the current videoplayback time.
+
+```js
+const subtitlesUrl = 'http://abc.def.com/xyz.srt'
+VideoPlayer.openSubtitles(subtitlesUrl)
+```
+Default parser in subtitle plugin can parse .srt and .vvt files. If you don't want to use the default parser you can also pass a custom parser as a callback as the second argument.
+
+NOTE: customParser must return list of subtitle object contains {start: \<float\>, end: \<float\>, payload: \<string\>}
+
+```js
+const customParser = (str) = {
+    ...
+    ...
+    return [{start: 3, end: 10, payload: 'this is subtitle text'}, { start: 11, end: 14, payload: 'this is subtitle text2'}, ...]
+}
+const subtitlesUrl = 'http://abc.def.com/xyz.srt'
+VideoPlayer.openSubtitles(subtitlesUrl, customParser)
+```
+By default, all the TextStyles are removed in subtitle text, you can pass {removeSubtitleTextStyles: false} as
+the third argument to keep text styles in subtitle string
+
+```js
+const subtitlesUrl = 'http://abc.def.com/xyz.srt'
+VideoPlayer.openSubtitles(subtitlesUrl, null, {removeSubtitleTextStyles: false})
+
+$videoPlayerSubtitlesReady() {
+    Log.info('subtitles are parsed and ready to use')
+}
+$videoPlayerSubtitlesError() {
+    Log.error('Failed to parse subtitle file')
+}
+
+```
+on successful parsing of subtitles $videoPlayerSubtitlesReady is fired on the consumer.
+if VideoPlayer fails to parse subtitles a $videoPlayerSubtitlesError is fired on the consumer. error returned as first argument.
+
+### SubtitleTextChanged
+you can use the $VidePlayerSubtitleTextChanged event that fires when there is a subtitle text change, in this event you will receive
+subtitle string as the first argument, which can be rendered in your app using the text component, and you get videoPlayer current time as the second argument.
+ ```js
+class SubtitlesComponent extends Lightning.component {
+    static _template() {
+        return {
+            Subtitles: {
+                text: {
+                    text: ''
+                    textColor: 0xff000000,
+                    fontSize: 48,
+                    textAlign: 'center',
+                }
+            }
+        }
+    }
+
+    $videoPlayerSubtitleTextChanged(text, currentTime){
+        const _subtitleText = text || ''// current subtitle to render depending on video playback
+        // update subtitle text to your template
+        this.tag('Subtitles').text.text = _subtitleText;
+    }
+}
+```
+If you don't want to depend on $VidePlayerSubtitleTextChanged, you can use currentSubtitleText
+### currentSubtitleText
+getter that retrieves the current subtitle as a string based on videoPlayer currentTime, which can be rendered in your app using the text component.
+ ```js
+class SubtitlesComponent extends Lightning.component {
+    static _template() {
+        return {
+            Subtitles: {
+                text: {
+                    text: ''
+                    textColor: 0xff000000,
+                    fontSize: 48,
+                    textAlign: 'center',
+                }
+            }
+        }
+    }
+
+    _active(){
+        this.showSubtitles()
+    }
+    _inactive(){
+        Registry.clearInterval(this.subsIntervalID)
+        this.subsIntervalID = null
+    }
+
+    showSubtitles(){
+        if(!this.subsIntervalID) {
+            this.subsIntervalID = Registry.setInterval(() => {
+            this.tag('Subtitles').text.text = VideoPlayer.currentSubtitleText || ''
+            }, 500)
+        }
+    }
+}
+```
+
+
+### clearSubtitles
+
+clears all store subtitles in plugin
+
+```js
+$videoPlayerSubtitlesCleared() {
+    Log.info('Subtitles Cleared')
+}
+VideoPlayer.clearSubtitles()
+```
+on successful clearing of subtitles $videoPlayerSubtitlesCleared is fired on the consumer.
+
+You can also use subtitles as an individual plugin without videoPlayer. More information on how to use subtitlesParser plugin can be found [here](./subtitlesParser.md).

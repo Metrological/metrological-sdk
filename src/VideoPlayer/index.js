@@ -26,6 +26,7 @@ import events from './events'
 import autoSetupMixin from '../helpers/autoSetupMixin'
 import easeExecution from '../helpers/easeExecution'
 import VideoTexture from './VideoTexture'
+import SubtitlesParser from '../SubtitlesParser'
 
 export let mediaUrl = url => url
 let videoEl
@@ -60,6 +61,18 @@ const state = {
   skipTime: false,
   playAfterSeek: null,
 }
+const subtitles = {
+  enabled: false,
+  currentCue: '',
+  previousCue: '',
+  currentCueTime: 0,
+  clear() {
+    this.enabled = false
+    this.currentCue = ''
+    this.previousCue = ''
+    this.currentCueTime = 0
+  },
+}
 
 const hooks = {
   play() {
@@ -83,6 +96,19 @@ const fireOnConsumer = (event, args) => {
   if (consumer) {
     consumer.fire('$videoPlayer' + event, args, videoEl.currentTime)
     consumer.fire('$videoPlayerEvent', event, args, videoEl.currentTime)
+  }
+  if (
+    event === events['timeupdate'] &&
+    subtitles.enabled &&
+    Math.abs(subtitles.currentCueTime - videoEl.currentTime) > 0.5
+  ) {
+    subtitles.currentCueTime = videoEl.currentTime
+    subtitles.currentCue = SubtitlesParser.getSubtitleByTimeIndex(videoEl.currentTime)
+    if (subtitles.previousCue !== subtitles.currentCue) {
+      subtitles.previousCue = subtitles.currentCue
+      // firing SubtitleTextChanged event on consumer if text is changed
+      fireOnConsumer('SubtitleTextChanged', subtitles.currentCue)
+    }
   }
 }
 
@@ -251,6 +277,36 @@ const videoPlayerPlugin = {
     }
   },
 
+  // open subtitle file
+  // @ params url: subtitle file URL
+  // @ customParser: a customParser to use instead of default parser of the plugin
+  // @ parseOptions.removeSubtitleTextStyles: remove subtitle textstyles possible value true or false
+  // @return parsed subtitles as list of objects
+  openSubtitles(url, customParser = false, options = { removeSubtitleTextStyles: true }) {
+    if (!this.canInteract) return
+    SubtitlesParser.fetchAndParseSubs(url, customParser, options)
+      .then(cues => {
+        if (!Array.isArray(cues) || cues.length <= 0) {
+          subtitles.enabled = false
+          fireOnConsumer('SubtitlesError', 'No subtitles available') // fire's on consumer when subtitles are empty
+        } else {
+          subtitles.enabled = true
+          fireOnConsumer('SubtitlesReady', {}) // fire's on consumer when subtitles are ready
+        }
+      })
+      .catch(err => {
+        subtitles.enabled = false
+        fireOnConsumer('SubtitlesError', err) // fire's on consumer when fetching subtitles failed
+      })
+  },
+
+  // clear all subtitle related data
+  clearSubtitles() {
+    SubtitlesParser.clearAllSubtitles()
+    subtitles.clear()
+    fireOnConsumer('SubtitlesCleared') // fire's on consumer on clearing subtitless
+  },
+
   reload() {
     if (!this.canInteract) return
     const url = videoEl.getAttribute('src')
@@ -280,6 +336,9 @@ const videoPlayerPlugin = {
     this.pause()
     if (textureMode === true) videoTexture.stop()
     return unloader(videoEl).then(() => {
+      if (subtitles.enabled) {
+        this.clearSubtitles()
+      }
       fireOnConsumer('Clear', { videoElement: videoEl })
     })
   },
@@ -429,6 +488,14 @@ const videoPlayerPlugin = {
     return state.adsEnabled
   },
 
+  // to get current subtitles
+  get currentSubtitleText() {
+    if (!subtitles.enabled) {
+      return null
+    }
+    return subtitles.currentCue ? subtitles.currentCue : ''
+  },
+
   // prefixed with underscore to indicate 'semi-private'
   // because it's not recommended to interact directly with the video element
   get _videoEl() {
@@ -442,7 +509,10 @@ const videoPlayerPlugin = {
 
 export default autoSetupMixin(videoPlayerPlugin, () => {
   precision =
-    (ApplicationInstance && ApplicationInstance.stage && ApplicationInstance.stage.getRenderPrecision()) || precision
+    (ApplicationInstance &&
+      ApplicationInstance.stage &&
+      ApplicationInstance.stage.getRenderPrecision()) ||
+    precision
 
   videoEl = setupVideoTag()
 

@@ -72,7 +72,6 @@ const PinInput = () => {
       }
     }
   }
-
 }
 
 export default () => {
