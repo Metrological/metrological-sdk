@@ -86,7 +86,7 @@ export default () => {
         alpha: 0.000001,
         Dialog: {
           w: 648,
-          h: 360, //320,
+          h: 360,
           y: h => (h - 320) / 2,
           x: w => (w - 648) / 2,
           rect: true,
