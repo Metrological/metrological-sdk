@@ -30,6 +30,7 @@ let submit = (pin, context) => {
       unlocked = true
       resolve(unlocked)
     } else {
+      unlocked = false
       reject('Incorrect pin')
     }
   })
@@ -79,7 +80,9 @@ export default {
   },
   hide() {
     ApplicationInstance.focus = null
-    ApplicationInstance.children = ApplicationInstance.children.map(child => child !== pinDialog && child)
+    ApplicationInstance.children = ApplicationInstance.children.map(
+      child => child !== pinDialog && child
+    )
     pinDialog = null
   },
   submit(pin, context) {
