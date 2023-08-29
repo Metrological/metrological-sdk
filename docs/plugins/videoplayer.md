@@ -143,7 +143,7 @@ The custom unloader function has to return a Promise that is resolved as soon as
 
 ```js
 // Note: this is in fact the default unloader function
-const myUnloader = (url, videoEl, config) => {
+const myUnloader = videoEl => {
   new Promise(resolve => {
     videoEl.removeAttribute('src')
     videoEl.load()
