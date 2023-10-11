@@ -72,7 +72,6 @@ const PinInput = () => {
       }
     }
   }
-
 }
 
 export default () => {
@@ -87,7 +86,7 @@ export default () => {
         alpha: 0.000001,
         Dialog: {
           w: 648,
-          h: 320,
+          h: 360,
           y: h => (h - 320) / 2,
           x: w => (w - 648) / 2,
           rect: true,
@@ -99,13 +98,42 @@ export default () => {
             text: { text: 'Please enter your PIN', fontSize: 32 },
           },
           Msg: {
-            y: 260,
-            x: 48,
-            text: { text: '', fontSize: 28, textColor: 0xffffffff },
+            y: 300,
+            x: w => w / 2,
+            mount: 0.5,
+            text: {
+              text: '',
+              fontSize: 28,
+              textColor: 0xffffffff,
+              textAlign: 'center',
+              verticalAlign: 'middle',
+            },
           },
           Code: {
             x: 48,
             y: 96,
+          },
+          OkButton: {
+            w: 260,
+            h: 75,
+            y: 266,
+            x: w => w / 2,
+            mountX: 0.5,
+            rect: true,
+            color: 0xffffffff,
+            shader: { type: Lightning.shaders.RoundedRectangle, radius: 10 },
+            Label: {
+              x: 130,
+              y: 40,
+              mount: 0.5,
+              text: {
+                text: 'OK',
+                textColor: 0xff333333,
+                fontSize: 40,
+                textAlign: 'center',
+                verticalAlign: 'middle',
+              },
+            },
           },
         },
       }
@@ -152,13 +180,16 @@ export default () => {
         this.tag('Msg').text = this._msg
         this.tag('Info').setSmooth('alpha', 0.5)
         this.tag('Code').setSmooth('alpha', 0.5)
+        this.tag('OkButton').setSmooth('alpha', 0)
       } else {
         this.tag('Msg').text = ''
         this.tag('Info').setSmooth('alpha', 1)
         this.tag('Code').setSmooth('alpha', 1)
+        this.tag('OkButton').setSmooth('alpha', 1)
       }
       this._timeout = setTimeout(() => {
         this.msg = ''
+        this.tag('OkButton').setSmooth('alpha', 1)
       }, 2000)
     }
 
@@ -166,18 +197,41 @@ export default () => {
       this.setSmooth('alpha', 1)
     }
 
+    _getDigit(event) {
+      const keyCodes = {
+        '48': 0,
+        '49': 1,
+        '50': 2,
+        '51': 3,
+        '52': 4,
+        '53': 5,
+        '54': 6,
+        '55': 7,
+        '56': 8,
+        '57': 9,
+      }
+      if (event && event.key) {
+        return parseInt(event.key)
+      } else {
+        let keyCode = event.which ? event.which : event.keyCode
+        return keyCodes[keyCode] || keyCodes[keyCode] === 0 ? keyCodes[keyCode] : -1
+      }
+    }
+
     _handleKey(event) {
+      const digit = this._getDigit(event)
       if (this.msg) {
         this.msg = false
       } else {
-        const val = parseInt(event.key)
-        if (val > -1) {
-          this.pin += val
+        if (digit > -1) {
+          this.pin += digit
         }
       }
     }
 
-    _handleBack() {
+    _handleBack(event) {
+      event.preventDefault()
+      event.stopPropagation()
       if (this.msg) {
         this.msg = false
       } else {
@@ -204,6 +258,7 @@ export default () => {
           })
           .catch(e => {
             this.msg = e
+            this.pin = ''
             this.reject(e)
           })
       }

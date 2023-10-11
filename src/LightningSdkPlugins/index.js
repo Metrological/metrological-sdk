@@ -38,5 +38,5 @@ export const initLightningSdkPlugin = {
   },
   set appInstance(v) {
     ApplicationInstance = v
-  }
+  },
 }
