@@ -288,6 +288,11 @@ const videoPlayerPlugin = {
     if (!this.canInteract) return
     if (textureMode === true) videoTexture.start()
     executeAsPromise(videoEl.play, null, videoEl).catch(e => {
+      fireOnConsumer('Error', { videoElement: videoEl, event: e })
+
+      // This is not API-compliant, as it results in firing "$videoPlayererror" rather than "$videoPlayerError".
+      // See docs here for API-compliant events -> https://github.com/Metrological/metrological-sdk/blob/master/docs/plugins/videoplayer.md#event-overview
+      // It has been kept for backwards compatability for library consumers who may have already written handler functions to match it.
       fireOnConsumer('error', { videoElement: videoEl, event: e })
     })
   },
