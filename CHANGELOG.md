@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.0.1 - 5 dec 2023
+## v1.0.2 - 5 dec 2023
 
 - Fix syntax error in video player event, ``$videoPlayererror`` to ``$videoPlayerError``. (backwards compatible)
 
