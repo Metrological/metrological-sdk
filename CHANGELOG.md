@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.1 - 5 dec 2023
+
+- Fix syntax error in video player event, ``$videoPlayererror`` to ``$videoPlayerError``. (backwards compatible)
+
+
 ## v1.0.0 - 19 aug 2022
 
 - Initial version of the Metrological SDK
