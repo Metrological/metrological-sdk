@@ -69,7 +69,8 @@ const hooks = {
     state.playing = false
   },
   seeked() {
-    state.playAfterSeek === true && videoPlayerPlugin.play()
+    state.playAfterSeek &&
+      videoEl.addEventListener('canplay', () => videoPlayerPlugin.play(), { once: true })
     state.playAfterSeek = null
   },
   abort() {
@@ -452,7 +453,10 @@ const videoPlayerPlugin = {
 
 export default autoSetupMixin(videoPlayerPlugin, () => {
   precision =
-    (ApplicationInstance && ApplicationInstance.stage && ApplicationInstance.stage.getRenderPrecision()) || precision
+    (ApplicationInstance &&
+      ApplicationInstance.stage &&
+      ApplicationInstance.stage.getRenderPrecision()) ||
+    precision
 
   videoEl = setupVideoTag()
 
